@@ -1,3 +1,5 @@
 [deps]
-DotEnv = "4dc1fcf4-5e3b-5448-94ab-0c38ec0385c1"
-OpenAI = "e9f21f70-7185-4079-aca2-91159181367c"
+Pluto = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
+
+[compat]
+Pluto = "0.19.25"
