@@ -24,24 +24,16 @@ Throughout this course, we will use OpenAI's gpt-3.5-turbo model and the chat [c
 This helper function will make it easier to use prompts and look at the generated outputs:
 """
 
-# ╔═╡ 019462ab-8fd3-467f-8f4c-b13846a77c0b
-function availableModels()
-	r = OpenAI.list_models(GPT_API_KEY)
-	r.status != 200 && error("Error retrieving model: $(response.status)")
-	return r.response["data"]
-end
-
-# ╔═╡ f16b4f90-9382-44c0-9fce-aeeaf2b38424
-availableModels()
-
-# ╔═╡ 67af2784-0922-412d-85ab-14d9c6b9b95e
+# ╔═╡ 295c6914-d906-4874-9d80-d5bc1c56d275
 md"""
+## Prompting Principles
+- **Principle 1: Write clear and specific instructions**
+- **Principle 2: Give the model time to “think”**
 
-```julia
-CC = create_chat(key, "gpt-3.5-turbo", 
-           [Dict("role" => "user", "content"=> "What continent is New York in? Two word answer.")],
-       streamcallback = x->println(Dates.now()));
-```
+### Tactics
+
+#### Tactic 1: Use delimiters to clearly indicate distinct parts of the input
+- Delimiters can be anything like: ```, \""", `< >`, `<tag> </tag>`, `:`
 """
 
 # ╔═╡ b071c73d-535b-49e8-a597-6c3fc6f5a4c5
@@ -73,19 +65,282 @@ begin
 	getCompletion(prompt1)
 end
 
+# ╔═╡ a4d2d346-5952-4f24-81d8-dd0c653f21f1
+md"""
+#### Tactic 2: Ask for a structured output
+- JSON, HTML
+"""
+
 # ╔═╡ ad3a7b7d-617b-4e41-9406-4f40710604fc
-prompt2 = """
-Generate a list of three made-up book titles along
-with their authors and genres. 
-Provide them in JSON format with the following keys: 
-book_id, title, author, genre.
-"""	
+begin
+	prompt2 = """
+	Generate a list of three made-up book titles along
+	with their authors and genres. 
+	Provide them in JSON format with the following keys: 
+	book_id, title, author, genre.
+	"""
+	
+	getCompletion(prompt2)
+end
 
-# ╔═╡ dbf9fad5-f96e-4469-8dd0-2711f21bd30f
-getCompletion(prompt2)
+# ╔═╡ 662f63b4-9cb4-4b06-b4da-57f24eb54089
+md"""
+#### Tactic 3: Ask the model to check whether conditions are satisfied
+"""
 
-# ╔═╡ bdce8cbf-947d-49d7-b659-40a56f1a293a
+# ╔═╡ dcb52dc2-9cf4-4eda-a75f-80e4d52647e8
+begin
+	text_1 = """
+	Making a cup of tea is easy! First, you need to get some
+	water boiling. While that's happening,
+	grab a cup and put a tea bag in it. Once the water is
+	hot enough, just pour it over the tea bag.
+	Let it sit for a bit so the tea can steep. After a
+	few minutes, take out the tea bag. If you
+	like, you can add some sugar or milk to taste.
+	And that's it! You've got yourself a delicious 
+	cup of tea to enjoy.
+	"""
+	prompt3 = """
+	You will be provided with text delimited by triple quotes. 
+	If it contains a sequence of instructions,
+	re-write those instructions in the following format:
+	
+	Step 1 - ...
+	Step 2 - …
+	…
+	Step N - …
+	
+	If the text does not contain a sequence of instructions,
+	then simply write \"No steps provided.\"
+	
+	\"\"\"$(text_1)\"\"\"
+	"""
+	response3 = getCompletion(prompt3)
+	println("Completion for Text 1:")
+	println(response3)
+end
 
+# ╔═╡ df696060-56a9-4e9a-bfd3-1b791bb7ea1e
+md"""
+#### Tactic 4: "Few-shot" prompting
+"""
+
+# ╔═╡ 6506d27c-9a9f-4c95-879b-eab0180911f4
+begin
+	prompt4 = """
+	Your task is to answer in a consistent style.
+	
+	<child>: Teach me about patience.
+	
+	<grandparent>: The river that carves the deepest
+	valley flows from a modest spring; the
+	grandest symphony originates from a single note;
+	the most intricate tapestry begins with a solitary thread.
+	
+	<child>: Teach me about resilience.
+	"""
+	response4 = getCompletion(prompt4)
+	print(response4)
+end
+
+# ╔═╡ b5d05d21-cf99-48b1-93f0-7b2aca2d6bae
+md"""
+### Principle 2: Give the model time to “think” 
+
+#### Tactic 1: Specify the steps required to complete a task
+"""
+
+# ╔═╡ 87abd33f-4b6e-4fec-b845-e4e2908cce10
+begin
+	text2_1 = """
+	In a charming village, siblings Jack and Jill set out on
+	a quest to fetch water from a hilltop
+	well. As they climbed, singing joyfully, misfortune
+	struck—Jack tripped on a stone and tumbled
+	down the hill, with Jill following suit.
+	Though slightly battered, the pair returned home to
+	comforting embraces. Despite the mishap,
+	their adventurous spirits remained undimmed, and they
+	continued exploring with delight.
+	"""
+	# example 1
+	prompt2_1 = """
+	Perform the following actions: 
+	1 - Summarize the following text delimited by triple
+	backticks with 1 sentence.
+	2 - Translate the summary into French.
+	3 - List each name in the French summary.
+	4 - Output a json object that contains the following
+	keys: french_summary, num_names.
+	
+	Separate your answers with line breaks.
+	
+	Text:
+	```$(text2_1)```
+	"""
+	response2_1 = getCompletion(prompt2_1)
+	println("Completion for prompt 2_1:")
+	println(response2_1)
+end
+
+# ╔═╡ 7e8cdfb2-ff5f-4f19-b4c0-a9c35cf5b178
+md"""
+#### Ask for output in a specified format
+"""
+
+# ╔═╡ 20ec2251-ca2c-4aaf-b6ca-b99fefff8572
+begin
+	prompt2_2 = """
+	Your task is to perform the following actions: 
+	1 - Summarize the following text delimited by 
+	  <> with 1 sentence.
+	2 - Translate the summary into French.
+	3 - List each name in the French summary.
+	4 - Output a json object that contains the 
+	  following keys: french_summary, num_names.
+	
+	Use the following format:
+	Text: <text to summarize>
+	Summary: <summary>
+	Translation: <summary translation>
+	Names: <list of names in Italian summary>
+	Output JSON: <json with summary and num_names>
+	
+	Text: <$(text2_1)>
+	"""
+	response2_2 = getCompletion(prompt2_2)
+	println("\nCompletion for prompt 2_2:")
+	println(response2_2)
+end
+
+# ╔═╡ 48e45458-23d3-4f80-b73e-2f91765efd33
+md"""
+#### Tactic 2: Instruct the model to work out its own solution before rushing to a conclusion
+"""
+
+# ╔═╡ a0026a02-dab9-4396-9384-a0170bb843d3
+begin
+	prompt2_3 = """
+	Determine if the student's solution is correct or not.
+	
+	Question:
+	I'm building a solar power installation and I need
+	 help working out the financials. 
+	- Land costs \$100 / square foot
+	- I can buy solar panels for \$250 / square foot
+	- I negotiated a contract for maintenance that will cost
+	me a flat \$100k per year, and an additional \$10 / square
+	foot
+	What is the total cost for the first year of operations 
+	as a function of the number of square feet.
+	
+	Student's Solution:
+	Let x be the size of the installation in square feet.
+	Costs:
+	1. Land cost: 100x
+	2. Solar panel cost: 250x
+	3. Maintenance cost: 100,000 + 100x
+	Total cost: 100x + 250x + 100,000 + 100x = 450x + 100,000
+	"""
+	response2_3 = getCompletion(prompt2_3)
+	print(response2_3)
+end
+
+# ╔═╡ 87e3bec7-d129-443b-afdb-2e66d541b023
+md"""
+#### Note that the student's solution is actually not correct.
+#### We can fix this by instructing the model to work out its own solution first.
+"""
+
+# ╔═╡ 0329c7b1-c704-496b-b155-bdaf69d19b76
+begin
+	prompt2_4 = """
+	Your task is to determine if the student's solution
+	is correct or not.
+	To solve the problem do the following:
+	- First, work out your own solution to the problem. 
+	- Then compare your solution to the student's solution
+	and evaluate if the student's solution is correct or not. 
+	Don't decide if the student's solution is correct until 
+	you have done the problem yourself.
+	
+	Use the following format:
+	Question:
+	```
+	question here
+	```
+	Student's solution:
+	```
+	student's solution here
+	```
+	Actual solution:
+	```
+	steps to work out the solution and your solution here
+	```
+	Is the student's solution the same as actual solution
+	just calculated:
+	```
+	yes or no
+	```
+	Student grade:
+	```
+	correct or incorrect
+	```
+	
+	Question:
+	```
+	I'm building a solar power installation and I need help
+	working out the financials. 
+	- Land costs \$100 / square foot
+	- I can buy solar panels for \$250 / square foot
+	- I negotiated a contract for maintenance that will cost
+	me a flat \$100k per year, and an additional \$10 / square
+	foot
+	What is the total cost for the first year of operations
+	as a function of the number of square feet.
+	``` 
+	Student's solution:
+	```
+	Let x be the size of the installation in square feet.
+	Costs:
+	1. Land cost: 100x
+	2. Solar panel cost: 250x
+	3. Maintenance cost: 100,000 + 100x
+	Total cost: 100x + 250x + 100,000 + 100x = 450x + 100,000
+	```
+	Actual solution:
+	"""
+	response2_4 = getCompletion(prompt2_4)
+	print(response2_4)
+end
+
+# ╔═╡ 0eb9c14f-60b9-4ae3-bafc-c92006c7181d
+md"""
+## Model Limitations: Hallucinations
+- Boie is a real company, the product name is not real.
+"""
+
+# ╔═╡ e56a58f6-0341-4cd0-b69d-3e5e54470389
+begin
+	prompt2_5 = """
+	Tell me about AeroGlide UltraSlim Smart Toothbrush by Boie
+	"""
+	response2_5 = getCompletion(prompt2_5)
+	print(response2_5)
+end
+
+# ╔═╡ f5ce19bd-9d99-4260-b626-d9397222d2d9
+md"""
+## Try experimenting on your own!
+"""
+
+# ╔═╡ e380ed6b-a247-4c0c-af7a-b43b2413229a
+md"""
+#### A note about the backslash
+- In the course, we are using a backslash `\` to make the text fit on the screen without inserting newline '\n' characters.
+- GPT-3 isn't really affected whether you insert newline characters or not.  But when working with LLMs in general, you may consider whether newline characters in your prompt may affect the model's performance.
+"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -302,13 +557,26 @@ version = "1.2.13+0"
 # ╠═af624fca-ab64-4dfd-a444-0d25856eb938
 # ╠═32eb5bbf-7180-4fc0-bc5f-5c593dc7eeb8
 # ╟─de450bf7-3009-442b-bd66-7cac8969257c
-# ╠═019462ab-8fd3-467f-8f4c-b13846a77c0b
-# ╠═f16b4f90-9382-44c0-9fce-aeeaf2b38424
-# ╟─67af2784-0922-412d-85ab-14d9c6b9b95e
+# ╟─295c6914-d906-4874-9d80-d5bc1c56d275
 # ╠═b071c73d-535b-49e8-a597-6c3fc6f5a4c5
 # ╠═d3ac851c-3724-44da-91db-13d6c6330ea2
+# ╟─a4d2d346-5952-4f24-81d8-dd0c653f21f1
 # ╠═ad3a7b7d-617b-4e41-9406-4f40710604fc
-# ╠═dbf9fad5-f96e-4469-8dd0-2711f21bd30f
-# ╠═bdce8cbf-947d-49d7-b659-40a56f1a293a
+# ╟─662f63b4-9cb4-4b06-b4da-57f24eb54089
+# ╠═dcb52dc2-9cf4-4eda-a75f-80e4d52647e8
+# ╟─df696060-56a9-4e9a-bfd3-1b791bb7ea1e
+# ╠═6506d27c-9a9f-4c95-879b-eab0180911f4
+# ╟─b5d05d21-cf99-48b1-93f0-7b2aca2d6bae
+# ╠═87abd33f-4b6e-4fec-b845-e4e2908cce10
+# ╟─7e8cdfb2-ff5f-4f19-b4c0-a9c35cf5b178
+# ╠═20ec2251-ca2c-4aaf-b6ca-b99fefff8572
+# ╟─48e45458-23d3-4f80-b73e-2f91765efd33
+# ╠═a0026a02-dab9-4396-9384-a0170bb843d3
+# ╟─87e3bec7-d129-443b-afdb-2e66d541b023
+# ╠═0329c7b1-c704-496b-b155-bdaf69d19b76
+# ╟─0eb9c14f-60b9-4ae3-bafc-c92006c7181d
+# ╠═e56a58f6-0341-4cd0-b69d-3e5e54470389
+# ╟─f5ce19bd-9d99-4260-b626-d9397222d2d9
+# ╟─e380ed6b-a247-4c0c-af7a-b43b2413229a
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
