@@ -11,10 +11,10 @@ using OpenAI
 using DotEnv
 
 # ╔═╡ af624fca-ab64-4dfd-a444-0d25856eb938
-DotEnv.config();
+DotEnv.config(); # ; hides the out of executed cell
 
-# ╔═╡ 933c2020-0f9e-4ee4-874c-a08f881f286f
-const GPT_API_KEY = ENV["OPENAI_API_KEY"]; # ; hides the output
+# ╔═╡ 32eb5bbf-7180-4fc0-bc5f-5c593dc7eeb8
+GPT_API_KEY = ENV["OPENAI_API_KEY"];
 
 # ╔═╡ de450bf7-3009-442b-bd66-7cac8969257c
 md"""
@@ -45,18 +45,46 @@ CC = create_chat(key, "gpt-3.5-turbo",
 """
 
 # ╔═╡ b071c73d-535b-49e8-a597-6c3fc6f5a4c5
-function getCompletion(prompt, model="text-davinci-002")
+function getCompletion(prompt, model="gpt-3.5-turbo")
 	message = [Dict("role" => "user",
 					"content"=> prompt
 			  )]
 	CC = create_chat(GPT_API_KEY, model, message)
-	# map(r->r["choices"][1]["delta"], CC.response)
+	CC.response["choices"][1]["message"]["content"]
 end
 
 # ╔═╡ d3ac851c-3724-44da-91db-13d6c6330ea2
-getCompletion("where is new york located")
+begin
+	text = """
+	You should express what you want a model to do by
+	providing instructions that are as clear and
+	specific as you can possibly make them.
+	This will guide the model towards the desired output, 
+	and reduce the chances of receiving irrelevant
+	or incorrect responses. Don't confuse writing a 
+	clear prompt with writing a short prompt.
+	In many cases, longer prompts provide more clarity
+	and context for the model, which can lead to
+	more detailed and relevant outputs.
+	"""
+	
+	prompt1 = "Summarize the text delimited by triple backticks into a single sentence. ```$(text)```"
+	
+	getCompletion(prompt1)
+end
 
-# ╔═╡ a7824765-bb94-4cdf-94cd-9b56ecb6bc8b
+# ╔═╡ ad3a7b7d-617b-4e41-9406-4f40710604fc
+prompt2 = """
+Generate a list of three made-up book titles along
+with their authors and genres. 
+Provide them in JSON format with the following keys: 
+book_id, title, author, genre.
+"""	
+
+# ╔═╡ dbf9fad5-f96e-4469-8dd0-2711f21bd30f
+getCompletion(prompt2)
+
+# ╔═╡ bdce8cbf-947d-49d7-b659-40a56f1a293a
 
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -272,13 +300,15 @@ version = "1.2.13+0"
 # ╠═881ff330-e654-11ed-1715-613ce23f8fab
 # ╠═2a512b6c-3320-41a1-8cd5-5e8f507648da
 # ╠═af624fca-ab64-4dfd-a444-0d25856eb938
-# ╠═933c2020-0f9e-4ee4-874c-a08f881f286f
+# ╠═32eb5bbf-7180-4fc0-bc5f-5c593dc7eeb8
 # ╟─de450bf7-3009-442b-bd66-7cac8969257c
 # ╠═019462ab-8fd3-467f-8f4c-b13846a77c0b
 # ╠═f16b4f90-9382-44c0-9fce-aeeaf2b38424
 # ╟─67af2784-0922-412d-85ab-14d9c6b9b95e
 # ╠═b071c73d-535b-49e8-a597-6c3fc6f5a4c5
 # ╠═d3ac851c-3724-44da-91db-13d6c6330ea2
-# ╠═a7824765-bb94-4cdf-94cd-9b56ecb6bc8b
+# ╠═ad3a7b7d-617b-4e41-9406-4f40710604fc
+# ╠═dbf9fad5-f96e-4469-8dd0-2711f21bd30f
+# ╠═bdce8cbf-947d-49d7-b659-40a56f1a293a
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
